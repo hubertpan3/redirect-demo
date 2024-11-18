@@ -17,11 +17,21 @@ import java.util.List;
 @Controller
 public class RedirectController {
 
+    /**
+     * Simple home page
+     * @return
+     */
     @GetMapping
     public ModelAndView home () {
         return  new ModelAndView("home");
     }
 
+    /**
+     * Redirect endpoint vulnerable to host header tampering
+     * @param httpServletRequest
+     * @param response
+     * @throws IOException
+     */
     @GetMapping("/redirect")
     public void redirect(HttpServletRequest httpServletRequest, HttpServletResponse response) throws IOException {
         response.sendRedirect("bob");
@@ -29,14 +39,22 @@ public class RedirectController {
 
     public static List<String> validHosts = List.of("localhost:8080", "www.icarusfrog.com");
 
+    /**
+     * Host header endpoint that is not vulnerable to host header tampering.
+     * @param request
+     * @param response
+     * @return
+     * @throws IOException
+     */
     @GetMapping("/redirecth")
-    public void redirectWithHostProtection(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public String redirectWithHostProtection(HttpServletRequest request, HttpServletResponse response) throws IOException {
         if(validHosts.contains(request.getHeader("Host"))) {
             response.sendRedirect("bob");
         } else {
             log.error("Invalid Host Header detected: {}", request.getHeader("Host"));
-            response.sendRedirect("error");
+            return "redirect-error";
         }
+        return "redirect-error";
     }
 
     @GetMapping("/bob")
